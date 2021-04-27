@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	delimeter string
+	delimiter string
 	output    *os.File
 )
 
@@ -19,14 +19,14 @@ func check(e error) {
 	}
 }
 
-func getFile(args []string, delimeter string) [][]string {
+func getFile(args []string, delimiter string) [][]string {
 	filename := args[0]
 
 	raw, err := os.Open(filename)
 	check(err)
 	reader := csv.NewReader(raw)
 
-	switch delimeter { // defaults to comma, optionally use tabs or pipes
+	switch delimiter { // defaults to comma, optionally use tabs or pipes
 	case "tab":
 		reader.Comma = '\t'
 	case "pipe", "|":
@@ -58,7 +58,7 @@ func main() {
 	fmt.Println("running app...")
 
 	//  command line  args
-	flag.StringVar(&delimeter, "d", ",", "file delimeter: tabs, pipes, or commas")
+	flag.StringVar(&delimiter, "d", ",", "file delimiter: tabs, pipes, or commas")
 	flag.Parse()
 	args := flag.Args()
 
@@ -71,7 +71,7 @@ func main() {
 	}
 
 	// read, transform, and write
-	csvData := getFile(args, delimeter)
+	csvData := getFile(args, delimiter)
 	processedData := processCSV(csvData)
 	err := json.NewEncoder(output).Encode(processedData)
 	check(err)

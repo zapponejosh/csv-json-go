@@ -1,7 +1,7 @@
 # CSV to JSON in Go
 
 Takes a CSV file and outputs JSON either to sdtout or a specified output file.
-Optionally use `-d` flga for alternative delimeter (tab or pipe)
+Optionally use `-d` flga for alternative delimiter (tab or pipe)
 
 ## Usage
 
@@ -11,5 +11,5 @@ Data to sdtout
 Data to output file
 `go run main.go [input_file] [output_file]`
 
-With optional delimeter
+With optional delimiter
 `go run main.go -d [tab | pipe] [input_file] [output_file]`
