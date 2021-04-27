@@ -3,14 +3,15 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
-	"strings"
 )
 
-type CSVImport [][]string
-
-type JSONExport []map[string]string
+var (
+	delimeter string
+	output    *os.File
+)
 
 func check(e error) {
 	if e != nil {
@@ -18,31 +19,29 @@ func check(e error) {
 	}
 }
 
-func getFile(args []string) CSVImport {
+func getFile(args []string, delimeter string) [][]string {
 	filename := args[0]
 
-	raw, err := os.ReadFile(filename)
+	raw, err := os.Open(filename)
 	check(err)
-	reader := csv.NewReader(strings.NewReader(string(raw)))
+	reader := csv.NewReader(raw)
 
-	if len(args) > 1 { // default to comma if no arg
-		switch delimeter := args[1]; delimeter {
-		case "tab":
-			reader.Comma = '\t'
-		case "pipe":
-			reader.Comma = '|'
-		default:
-		}
+	switch delimeter { // defaults to comma, optionally use tabs or pipes
+	case "tab":
+		reader.Comma = '\t'
+	case "pipe", "|":
+		reader.Comma = '|'
+	default:
 	}
 
-	records, e := reader.ReadAll()
+	data, e := reader.ReadAll()
 	check(e)
 
-	return records
+	return data
 }
 
-func processCSV(data CSVImport) JSONExport {
-	processedData := make(JSONExport, len(data)-1)
+func processCSV(data [][]string) []map[string]string {
+	processedData := make([]map[string]string, len(data)-1)
 	for i, row := range data {
 		if i > 0 {
 			newMap := make(map[string]string)
@@ -51,22 +50,31 @@ func processCSV(data CSVImport) JSONExport {
 			}
 			processedData[i-1] = newMap
 		}
-
 	}
-
 	return processedData
 }
 
 func main() {
 	fmt.Println("running app...")
-	args := os.Args[1:]
-	csvData := getFile(args)
 
-	data := processCSV(csvData)
-	json, err := json.Marshal(data)
+	//  command line  args
+	flag.StringVar(&delimeter, "d", ",", "file delimeter: tabs, pipes, or commas")
+	flag.Parse()
+	args := flag.Args()
+
+	if len(args) == 2 {
+		out, err := os.Create(args[1])
+		output = out
+		check(err)
+	} else {
+		output = os.Stdout
+	}
+
+	// read, transform, and write
+	csvData := getFile(args, delimeter)
+	processedData := processCSV(csvData)
+	err := json.NewEncoder(output).Encode(processedData)
 	check(err)
-
-	os.WriteFile("output.json", json, 0644)
 	fmt.Println("complete")
 
 }
