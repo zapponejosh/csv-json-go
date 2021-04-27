@@ -1,7 +1,7 @@
 # CSV to JSON in Go
 
 Takes a CSV file and outputs JSON either to sdtout or a specified output file.
-Optionally use `-d` flga for alternative delimiter (tab or pipe)
+Optionally use `-d` flag for alternative delimiter (tab or pipe)
 
 ## Usage
 
